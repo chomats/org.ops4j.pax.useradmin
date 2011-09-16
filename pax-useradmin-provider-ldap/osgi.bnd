@@ -1,8 +1,8 @@
 
 Bundle-Activator: org.ops4j.pax.useradmin.provider.ldap.internal.Activator
 Embed-Dependency: *;scope=compile|runtime
-##Export-Package: 
-##Import-Package: org.openspml.client.*
+##Export-Package: org.ops4j.pax.useradmin.provider.ldap
+##Import-Package: org.openspml.client.*, com.novell.ldap
 
 Import-Package: javax.servlet.http.*;resolution:=optional,\
                 javax.mail.*;resolution:=optional,\

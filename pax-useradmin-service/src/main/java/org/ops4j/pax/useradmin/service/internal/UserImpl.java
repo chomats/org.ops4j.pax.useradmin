@@ -58,7 +58,7 @@ public class UserImpl extends RoleImpl implements User {
     /**
      * @see User#getCredentials()
      */
-    @SuppressWarnings(value = "unchecked")
+    @SuppressWarnings("rawtypes")
     public Dictionary getCredentials() {
         return m_credentials;
     }
@@ -77,14 +77,21 @@ public class UserImpl extends RoleImpl implements User {
             throw new IllegalArgumentException(UserAdminMessages.MSG_INVALID_VALUE);
         }
         if (value instanceof String || value instanceof byte[]) {
+            
             getAdmin().checkAdminPermission();
-            for (Object credentialKey : m_credentials.keySet()) {
-                if (credentialKey.equals(key)) {
-                    // check this credential
-                    byte[] credentialValue = (byte[]) m_credentials.get(key);
-                    return    null != credentialValue
-                           && getAdmin().compareToEncryptedValue(value, credentialValue);
-                }
+            
+            return checkCredential(key, value);
+        }
+        return false;
+    }
+
+    protected boolean checkCredential(String key, Object value) {
+        for (Object credentialKey : m_credentials.keySet()) {
+            if (credentialKey.equals(key)) {
+                // check this credential
+                byte[] credentialValue = (byte[]) m_credentials.get(key);
+                return null != credentialValue
+                       && getAdmin().compareToEncryptedValue(value, credentialValue);
             }
         }
         return false;
@@ -105,7 +112,7 @@ public class UserImpl extends RoleImpl implements User {
      * @param checkedRoles Used for loop detection.
      * @return True if this role is implied by the given one, false otherwise.
      */
-    protected ImplicationResult isImpliedBy(Role role, Collection<String> checkedRoles) {
+    public ImplicationResult isImpliedBy(Role role, Collection<String> checkedRoles) {
         if (checkedRoles.contains(getName())) {
             return ImplicationResult.IMPLIEDBY_LOOPDETECTED;
         }

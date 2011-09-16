@@ -23,7 +23,7 @@ import java.util.Collection;
 import org.easymock.classextension.EasyMock;
 import org.junit.Assert;
 import org.junit.Test;
-import org.ops4j.pax.useradmin.service.internal.RoleImpl.ImplicationResult;
+import org.ops4j.pax.useradmin.service.spi.ExtendedRole.ImplicationResult;
 import org.ops4j.pax.useradmin.service.spi.StorageException;
 import org.ops4j.pax.useradmin.service.spi.StorageProvider;
 import org.osgi.service.log.LogService;

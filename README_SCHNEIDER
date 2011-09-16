@@ -1,0 +1,1 @@
+mvn deploy -DaltDeploymentRepository="snapshots::default::http://rdits-itcodendi.schneider-electric.com:8081/nexus/content/repositories/snapshots"

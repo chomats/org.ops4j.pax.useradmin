@@ -17,10 +17,10 @@
 
 package org.ops4j.pax.useradmin.service.internal;
 
-import java.util.Collection;
 import java.util.Dictionary;
 import java.util.Map;
 
+import org.ops4j.pax.useradmin.service.spi.ExtendedRole;
 import org.osgi.service.useradmin.Role;
 
 /**
@@ -31,7 +31,7 @@ import org.osgi.service.useradmin.Role;
  * @author Matthias Kuespert
  * @since 02.07.2009
  */
-public abstract class RoleImpl implements Role {
+public abstract class RoleImpl implements ExtendedRole {
 
     /**
      * The name of the role.
@@ -51,14 +51,7 @@ public abstract class RoleImpl implements Role {
      */
     private RoleProperties m_properties = null;
 
-    /**
-     * States used as return value for isImpliedBy() calls.
-     */
-    protected enum ImplicationResult {
-        IMPLIEDBY_YES,           // given role is implied by this one
-        IMPLIEDBY_NO,            // given role is not implied by this one
-        IMPLIEDBY_LOOPDETECTED   // detected a loop - e.g. a group containing itself.
-    }
+    
 
     /**
      * Constructor.
@@ -108,15 +101,5 @@ public abstract class RoleImpl implements Role {
         return m_admin;
     }
     
-    /**
-     * Checks if this role is implied by the given one.
-     * 
-     * @param role The role to check.
-     * @param checkedRoles Used for loop detection.
-     * @return An <code>ImplicationResult</code>.
-     */
-    protected abstract ImplicationResult isImpliedBy(Role role, Collection<String> checkedRoles);
-//    {
-//        throw new IllegalStateException("Internal error: RoleImpl.impliedBy() must not be called.");
-//    }
+    
 }

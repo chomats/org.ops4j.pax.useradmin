@@ -23,6 +23,7 @@ import java.util.Map;
 
 import org.ops4j.pax.useradmin.service.spi.StorageException;
 import org.ops4j.pax.useradmin.service.spi.StorageProvider;
+import org.ops4j.pax.useradmin.service.spi.ExtendedRole;
 import org.osgi.service.log.LogService;
 import org.osgi.service.useradmin.Group;
 import org.osgi.service.useradmin.Role;
@@ -156,7 +157,7 @@ public class GroupImpl extends UserImpl implements Group {
      * @param checkedRoles Used for loop detection.
      * @return True if this role is implied by the given one, false otherwise.
      */
-    protected ImplicationResult isImpliedBy(Role role, Collection<String> checkedRoles) {
+    public ImplicationResult isImpliedBy(Role role, Collection<String> checkedRoles) {
         // check if this group is implied
         ImplicationResult isImplied = super.isImpliedBy(role, checkedRoles);
         if (ImplicationResult.IMPLIEDBY_NO != isImplied) {
@@ -167,7 +168,7 @@ public class GroupImpl extends UserImpl implements Group {
             if (null != members) {
                 Collection<String> localCheckedRoles = new ArrayList<String>(checkedRoles);
                 for (Role member : members) {
-                    isImplied = ((RoleImpl) member).isImpliedBy(role,
+                    isImplied = ((ExtendedRole) member).isImpliedBy(role,
                                                                 localCheckedRoles);
                     if (ImplicationResult.IMPLIEDBY_YES != isImplied) {
                         // not implied because not all required members are
@@ -180,7 +181,7 @@ public class GroupImpl extends UserImpl implements Group {
             if (null != members) {
                 Collection<String> localCheckedRoles = new ArrayList<String>(checkedRoles);
                 for (Role member : members) {
-                    isImplied = ((RoleImpl) member).isImpliedBy(role,
+                    isImplied = ((ExtendedRole) member).isImpliedBy(role,
                                                                 localCheckedRoles);
                     if (ImplicationResult.IMPLIEDBY_YES == isImplied) {
                         // implied because one basic member is implied

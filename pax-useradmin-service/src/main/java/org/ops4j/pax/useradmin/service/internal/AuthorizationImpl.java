@@ -20,7 +20,7 @@ package org.ops4j.pax.useradmin.service.internal;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import org.ops4j.pax.useradmin.service.internal.RoleImpl.ImplicationResult;
+import org.ops4j.pax.useradmin.service.spi.ExtendedRole;
 import org.osgi.framework.InvalidSyntaxException;
 import org.osgi.service.useradmin.Authorization;
 import org.osgi.service.useradmin.Role;
@@ -74,9 +74,9 @@ public class AuthorizationImpl implements Authorization {
             if (null != roles) {
                 for (Role role : roles) {
                     if (!Role.USER_ANYONE.equals(role.getName())) {
-                        ImplicationResult result = ((RoleImpl) role).isImpliedBy(m_user,
+                        ExtendedRole.ImplicationResult result = ((ExtendedRole) role).isImpliedBy(m_user,
                                                                                  new ArrayList<String>());
-                        if (ImplicationResult.IMPLIEDBY_YES == result) {
+                        if (ExtendedRole.ImplicationResult.IMPLIEDBY_YES == result) {
                             String name = role.getName();
                             roleNames.add(name);
                         }
@@ -98,8 +98,8 @@ public class AuthorizationImpl implements Authorization {
      * @see Authorization#hasRole(String)
      */
     public boolean hasRole(String name) {
-        RoleImpl roleToCheck = (RoleImpl) m_userAdmin.getRole(name);
+        ExtendedRole roleToCheck = (ExtendedRole) m_userAdmin.getRole(name);
         return    null != roleToCheck
-               && ImplicationResult.IMPLIEDBY_YES == roleToCheck.isImpliedBy(m_user, new ArrayList<String>());
+               && ExtendedRole.ImplicationResult.IMPLIEDBY_YES == roleToCheck.isImpliedBy(m_user, new ArrayList<String>());
     }
 }

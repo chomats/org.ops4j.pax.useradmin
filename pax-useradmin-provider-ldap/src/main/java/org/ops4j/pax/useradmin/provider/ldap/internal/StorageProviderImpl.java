@@ -87,6 +87,8 @@ public class StorageProviderImpl implements StorageProvider, ManagedService {
     private String              m_groupEntryIdAttr          = ConfigurationConstants.DEFAULT_GROUP_ENTRY_ATTR_ID;
     private String              m_groupEntryMemberAttr      = ConfigurationConstants.DEFAULT_GROUP_ENTRY_ATTR_MEMBER;
 
+    private boolean             m_use_bind_credential = true;
+    
     /**
      * The connection which is used for access.
      */
@@ -110,7 +112,7 @@ public class StorageProviderImpl implements StorageProvider, ManagedService {
      * @see ManagedService#updated(Dictionary)
      */
     @SuppressWarnings(value = "unchecked")
-    public void updated(Dictionary properties) throws ConfigurationException {
+    public void updated(@SuppressWarnings("rawtypes") Dictionary properties) throws ConfigurationException {
         if (null == properties) {
             // ignore empty properties
             return;
@@ -145,6 +147,9 @@ public class StorageProviderImpl implements StorageProvider, ManagedService {
         m_userMandatoryAttr = UserAdminTools.getOptionalProperty(properties,
                                                                  ConfigurationConstants.PROP_USER_ATTR_MANDATORY,
                                                                  ConfigurationConstants.DEFAULT_USER_ATTR_MANDATORY);
+        m_userCredentialAttr = UserAdminTools.getOptionalProperty(properties,
+                ConfigurationConstants.PROP_USER_ATTR_CREDENTIAL,
+                ConfigurationConstants.DEFAULT_USER_ATTR_CREDENTIAL);
 
         m_groupObjectclass = UserAdminTools.getOptionalProperty(properties,
                                                                 ConfigurationConstants.PROP_GROUP_OBJECTCLASS,
@@ -364,6 +369,15 @@ public class StorageProviderImpl implements StorageProvider, ManagedService {
             if (   (type == Role.GROUP && m_groupCredentialAttr.equals(attribute.getName()))
                        || (type == Role.USER && m_userCredentialAttr.equals(attribute.getName()))) {
                 for (String value : attribute.getStringValueArray()) {
+                    
+                    // doc rfc2307 chapiter 5.2 and 5.3
+                    //ldap return {SSHA}s9cD9H/r8rMi3qzsjD0JTDLhR1GSRb5O1xoQYw==
+                    if (value.startsWith("{")) {
+                        String algo = value.substring(1, value.indexOf("}"));
+                        String pwd =  value.substring(value.indexOf("}")+1);
+                        credentials.put(algo, pwd); ///?
+                        continue;
+                    }
                     String[] data = value.split(PATTERN_SPLIT_LIST_VALUE);
                     if (CREDENTIAL_VALUE_ARRAY_SIZE != data.length) {
                         throw new StorageException("Wrong credential format '" + value + "' found for entry: " + entry);
@@ -384,8 +398,8 @@ public class StorageProviderImpl implements StorageProvider, ManagedService {
         }
         switch (type) {
             case Role.USER:
-                return factory.createUser(entry.getAttribute(m_userIdAttr).getStringValue(),
-                                          properties, credentials);
+                return new UserImplWithBind(this,  factory.createUser(entry.getAttribute(m_userIdAttr).getStringValue(),
+                                          properties, credentials));
             case Role.GROUP:
                 return factory.createGroup(entry.getAttribute(m_groupIdAttr).getStringValue(),
                                            properties, credentials);
@@ -493,7 +507,6 @@ public class StorageProviderImpl implements StorageProvider, ManagedService {
      * @throws LDAPException
      * @throws StorageException
      */
-    @SuppressWarnings(value = "unchecked")
     private Collection<Role> getMembers(LDAPConnection connection,
                                         UserAdminFactory factory,
                                         Group group,
@@ -512,23 +525,31 @@ public class StorageProviderImpl implements StorageProvider, ManagedService {
         //
         LDAPEntry subGroupEntry = getEntry(connection, getGroupDN(group.getName(), ext));
         if (null != subGroupEntry) {
-            Iterator<LDAPAttribute> it = subGroupEntry.getAttributeSet().iterator();
-            while (it.hasNext()) {
-                LDAPAttribute attribute = it.next();
-                if (m_groupEntryMemberAttr.equals(attribute.getName())) {
-                    for (String userDN : attribute.getStringValueArray()) {
-                        LDAPEntry userEntry = getEntry(connection,userDN);
-                        if (null == userEntry) {
-                            throw new StorageException(  "Internal error: group member '" + userDN
-                                                         + "' could not be retrieved.");
-                        }
-                        Role role = createRole(factory, userEntry);
-                        roles.add(role);
+            extractRole(connection, factory, roles, subGroupEntry);
+        } else
+            extractRole(connection, factory, roles, groupEntry);
+        return roles;
+    }
+
+    protected void extractRole(LDAPConnection connection,
+            UserAdminFactory factory, Collection<Role> roles,
+            LDAPEntry groupEntry) throws LDAPException, StorageException {
+        @SuppressWarnings("unchecked")
+        Iterator<LDAPAttribute> it = groupEntry.getAttributeSet().iterator();
+        while (it.hasNext()) {
+            LDAPAttribute attribute = it.next();
+            if (m_groupEntryMemberAttr.equals(attribute.getName())) {
+                for (String userDN : attribute.getStringValueArray()) {
+                    LDAPEntry userEntry = getEntry(connection,userDN);
+                    if (null == userEntry) {
+                        throw new StorageException(  "Internal error: group member '" + userDN
+                                                     + "' could not be retrieved.");
                     }
+                    Role role = createRole(factory, userEntry);
+                    roles.add(role);
                 }
             }
         }
-        return roles;
     }
     
     @SuppressWarnings(value = "unchecked")
@@ -1008,6 +1029,9 @@ public class StorageProviderImpl implements StorageProvider, ManagedService {
                         throw new StorageException("Internal error: found role is not a user");
                     }
                     user = (User) role;
+                    if (user instanceof UserImplWithBind) {
+                        ((UserImplWithBind)user).setKey(key);
+                    }
                 }
             }
             return user;
@@ -1051,5 +1075,24 @@ public class StorageProviderImpl implements StorageProvider, ManagedService {
         } finally {
             closeConnection();
         }
+    }
+
+    public boolean bind(String key, String userName, String password) {
+        try {
+            if (m_connection.isConnected() || m_connection.isBound()) {
+                m_connection.disconnect();
+            }
+            m_connection.connect(m_host, new Integer(m_port));
+            m_connection.bind(LDAPConnection.LDAP_V3, key + "="+userName+","+m_rootUsersDN, password.getBytes("UTF8"));
+            return true;
+        } catch (LDAPException e) {
+            return false;
+        } catch (UnsupportedEncodingException e) {
+            return false;
+        }
+    }
+
+    public boolean useBindMethod() {
+        return m_use_bind_credential;
     }
 }
