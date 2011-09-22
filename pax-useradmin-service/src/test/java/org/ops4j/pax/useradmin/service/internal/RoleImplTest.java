@@ -457,7 +457,7 @@ public class RoleImplTest {
         //
         EasyMock.replay(userAdmin);
         //
-        Collection<String> checkedRoles = new ArrayList<String>();
+        Collection<Role> checkedRoles = new ArrayList<Role>();
         Assert.assertEquals("Role does not imply itself", ImplicationResult.IMPLIEDBY_YES, role1.isImpliedBy(role1, checkedRoles));
         Assert.assertEquals("Role does not imply user.anyone", ImplicationResult.IMPLIEDBY_YES, role2.isImpliedBy(role1, checkedRoles));
 //        checkedRoles.clear();

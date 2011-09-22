@@ -51,6 +51,8 @@ public abstract class RoleImpl implements ExtendedRole {
      */
     private RoleProperties m_properties = null;
 
+    private String m_qualifiedName;
+
     
 
     /**
@@ -102,4 +104,27 @@ public abstract class RoleImpl implements ExtendedRole {
     }
     
     
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof ExtendedRole) {
+            ExtendedRole er = (ExtendedRole) obj;
+            return getType() == er.getType() && getQualifiedName().equals(er.getQualifiedName());
+        }
+        return super.equals(obj);
+    }
+    
+    @Override
+    public int hashCode() {
+        return getType() ^ getQualifiedName().hashCode();
+    }
+    
+    public void setQualifiedName(String qualifiedName) {
+        m_qualifiedName = qualifiedName;
+    }
+    
+    public String getQualifiedName() {
+        if (m_qualifiedName == null)
+            return m_name;
+        return m_qualifiedName;
+    }
 }

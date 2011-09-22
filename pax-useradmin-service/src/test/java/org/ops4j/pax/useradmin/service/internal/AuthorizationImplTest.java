@@ -38,6 +38,7 @@ public class AuthorizationImplTest {
 
     private static final String USER_NAME1 = "someRole1";
     private static final String USER_NAME2 = "someRole2";
+    private static final String USER_NAME3 = "someGroup3"; //same as GROUP_NAME3
     private static final String GROUP_NAME1 = "someGroup1";
     private static final String GROUP_NAME2 = "someGroup2";
     private static final String GROUP_NAME3 = "someGroup3";
@@ -147,6 +148,46 @@ public class AuthorizationImplTest {
         authorization = new AuthorizationImpl(userAdmin, group3);
         roles = authorization.getRoles();
         Assert.assertNull(roles);
+        //
+        EasyMock.verify(userAdmin, sp);
+    }
+    
+    @Test
+    public void isImpliedRolesOk() {
+        UserAdminImpl userAdmin = EasyMock.createMock(UserAdminImpl.class);
+        UserImpl user1 = new UserImpl(USER_NAME1, userAdmin, null, null);
+        UserImpl user2 = new UserImpl(USER_NAME2, userAdmin, null, null);
+        UserImpl user3 = new UserImpl(USER_NAME3, userAdmin, null, null);
+        
+        StorageProvider sp = EasyMock.createMock(StorageProvider.class);
+        GroupImpl group3 = new GroupImpl(GROUP_NAME3, userAdmin, null, null);
+        try {
+            // 1st addMember()
+            Collection<Role> empty = new ArrayList<Role>();
+            Collection<Role> group3Members = new ArrayList<Role>();
+            group3Members.add(user1);
+            group3Members.add(user3); // this order
+            group3Members.add(user2);
+            EasyMock.expect(sp.getMembers(userAdmin, group3)).andReturn(group3Members).times(2);
+            EasyMock.expect(sp.getRequiredMembers(userAdmin, group3)).andReturn(empty).times(2);
+            //
+            EasyMock.expect(userAdmin.getStorageProvider()).andReturn(sp).times(4);
+            EasyMock.expect(userAdmin.getRole(GROUP_NAME3)).andReturn(group3).times(3);
+            
+            //
+        } catch (StorageException e) {
+            Assert.fail("Unexpected StorageException: " + e.getMessage());
+        } 
+        EasyMock.replay(userAdmin, sp);
+        //
+        Authorization authorization = new AuthorizationImpl(userAdmin, user1);
+        Assert.assertTrue(authorization.hasRole(GROUP_NAME3));
+        //
+        authorization = new AuthorizationImpl(userAdmin, user2);
+        Assert.assertTrue(authorization.hasRole(GROUP_NAME3));
+        //
+        authorization = new AuthorizationImpl(userAdmin, group3);
+        Assert.assertTrue(authorization.hasRole(GROUP_NAME3));
         //
         EasyMock.verify(userAdmin, sp);
     }

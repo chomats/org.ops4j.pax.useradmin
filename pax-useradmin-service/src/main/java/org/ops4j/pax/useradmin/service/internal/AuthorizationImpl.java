@@ -75,7 +75,7 @@ public class AuthorizationImpl implements Authorization {
                 for (Role role : roles) {
                     if (!Role.USER_ANYONE.equals(role.getName())) {
                         ExtendedRole.ImplicationResult result = ((ExtendedRole) role).isImpliedBy(m_user,
-                                                                                 new ArrayList<String>());
+                                                                                 new ArrayList<Role>());
                         if (ExtendedRole.ImplicationResult.IMPLIEDBY_YES == result) {
                             String name = role.getName();
                             roleNames.add(name);
@@ -100,6 +100,6 @@ public class AuthorizationImpl implements Authorization {
     public boolean hasRole(String name) {
         ExtendedRole roleToCheck = (ExtendedRole) m_userAdmin.getRole(name);
         return    null != roleToCheck
-               && ExtendedRole.ImplicationResult.IMPLIEDBY_YES == roleToCheck.isImpliedBy(m_user, new ArrayList<String>());
+               && ExtendedRole.ImplicationResult.IMPLIEDBY_YES == roleToCheck.isImpliedBy(m_user, new ArrayList<Role>());
     }
 }

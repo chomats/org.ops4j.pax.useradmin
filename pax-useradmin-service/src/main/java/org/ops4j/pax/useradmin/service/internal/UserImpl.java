@@ -112,11 +112,11 @@ public class UserImpl extends RoleImpl implements User {
      * @param checkedRoles Used for loop detection.
      * @return True if this role is implied by the given one, false otherwise.
      */
-    public ImplicationResult isImpliedBy(Role role, Collection<String> checkedRoles) {
-        if (checkedRoles.contains(getName())) {
+    public ImplicationResult isImpliedBy(Role role, Collection<Role> checkedRoles) {
+        if (checkedRoles.contains(this)) {
             return ImplicationResult.IMPLIEDBY_LOOPDETECTED;
         }
-        checkedRoles.add(getName());
+        checkedRoles.add(this);
         return    getName().equals(Role.USER_ANYONE)
                || getName().equals(role.getName())   ? ImplicationResult.IMPLIEDBY_YES : ImplicationResult.IMPLIEDBY_NO;
         // TODO check if we need that: || Role.USER_ANYONE.equals(role.getName());

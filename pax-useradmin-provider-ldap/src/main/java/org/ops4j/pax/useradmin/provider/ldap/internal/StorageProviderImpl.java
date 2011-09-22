@@ -1031,6 +1031,7 @@ public class StorageProviderImpl implements StorageProvider, ManagedService {
                     user = (User) role;
                     if (user instanceof UserImplWithBind) {
                         ((UserImplWithBind)user).setKey(key);
+                        ((UserImplWithBind)user).setQualifiedName("(" + key + "=" + value + "),"+m_rootDN);
                     }
                 }
             }

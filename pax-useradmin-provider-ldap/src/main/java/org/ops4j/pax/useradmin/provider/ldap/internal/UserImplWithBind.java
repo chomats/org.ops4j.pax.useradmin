@@ -51,8 +51,28 @@ public class UserImplWithBind implements User, ExtendedRole {
     }
 
     public ImplicationResult isImpliedBy(Role role,
-            Collection<String> checkedRoles) {
+            Collection<Role> checkedRoles) {
         return ((ExtendedRole) m_user).isImpliedBy(role, checkedRoles);
     }
+    
+    public String getQualifiedName() {
+        return ((ExtendedRole) m_user).getQualifiedName();
+    }
+    
+    public void setQualifiedName(String qualifiedName) {
+        ((ExtendedRole) m_user).setQualifiedName(qualifiedName);
+    }
+    
+    @Override
+    public int hashCode() {
+        return m_user.hashCode();
+    }
+    
+    @Override
+    public boolean equals(Object obj) {
+        return m_user.equals(obj);
+    }
+    
+    
 
 }

@@ -478,7 +478,7 @@ public class GroupImplTest {
         Assert.assertTrue("Member not added", group2.addMember(user1));
         Assert.assertTrue("Member not added", group2.addRequiredMember(group1));
         //
-        Collection<String> checkedRoles = new ArrayList<String>();
+        Collection<Role> checkedRoles = new ArrayList<Role>();
         Assert.assertEquals("Group not implied by itself", ImplicationResult.IMPLIEDBY_YES, group1.isImpliedBy(group1, checkedRoles));
         checkedRoles.clear();
         Assert.assertEquals("User 1 does not imply group 1", ImplicationResult.IMPLIEDBY_YES, group1.isImpliedBy(user1, checkedRoles));
@@ -491,10 +491,10 @@ public class GroupImplTest {
         checkedRoles.clear();
         Assert.assertEquals("User 2 does imply group 2", ImplicationResult.IMPLIEDBY_NO, group2.isImpliedBy(user2, checkedRoles));
         checkedRoles.clear();
-        checkedRoles.add(GROUP_NAME1);
+        checkedRoles.add(group1);
         Assert.assertEquals("Loop not detected", ImplicationResult.IMPLIEDBY_LOOPDETECTED, group1.isImpliedBy(group1, checkedRoles));
         checkedRoles.clear();
-        checkedRoles.add(USER_NAME1);
+        checkedRoles.add(user1);
         Assert.assertEquals("Loop not detected", ImplicationResult.IMPLIEDBY_NO, group2.isImpliedBy(user1, checkedRoles));
         //
         EasyMock.verify(userAdmin);

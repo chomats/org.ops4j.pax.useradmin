@@ -157,7 +157,7 @@ public class GroupImpl extends UserImpl implements Group {
      * @param checkedRoles Used for loop detection.
      * @return True if this role is implied by the given one, false otherwise.
      */
-    public ImplicationResult isImpliedBy(Role role, Collection<String> checkedRoles) {
+    public ImplicationResult isImpliedBy(Role role, Collection<Role> checkedRoles) {
         // check if this group is implied
         ImplicationResult isImplied = super.isImpliedBy(role, checkedRoles);
         if (ImplicationResult.IMPLIEDBY_NO != isImplied) {
@@ -166,7 +166,7 @@ public class GroupImpl extends UserImpl implements Group {
             // check if all required members are implied
             Role[] members = getRequiredMembers();
             if (null != members) {
-                Collection<String> localCheckedRoles = new ArrayList<String>(checkedRoles);
+                Collection<Role> localCheckedRoles = new ArrayList<Role>(checkedRoles);
                 for (Role member : members) {
                     isImplied = ((ExtendedRole) member).isImpliedBy(role,
                                                                 localCheckedRoles);
@@ -179,7 +179,7 @@ public class GroupImpl extends UserImpl implements Group {
             }
             members = getMembers();
             if (null != members) {
-                Collection<String> localCheckedRoles = new ArrayList<String>(checkedRoles);
+                Collection<Role> localCheckedRoles = new ArrayList<Role>(checkedRoles);
                 for (Role member : members) {
                     isImplied = ((ExtendedRole) member).isImpliedBy(role,
                                                                 localCheckedRoles);

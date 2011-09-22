@@ -329,11 +329,11 @@ public class UserImplTest {
         //
         EasyMock.replay(userAdmin);
         //
-        Collection<String> checkedRoles = new ArrayList<String>();
+        Collection<Role> checkedRoles = new ArrayList<Role>();
         Assert.assertEquals("User not implied by itself", ImplicationResult.IMPLIEDBY_YES,
                             user1.isImpliedBy(user1, checkedRoles));
         checkedRoles.clear();
-        checkedRoles.add(USER_NAME1);
+        checkedRoles.add(user1);
         Assert.assertEquals("Implication loop not detected",
                             ImplicationResult.IMPLIEDBY_LOOPDETECTED,
                             user1.isImpliedBy(user1, checkedRoles));
